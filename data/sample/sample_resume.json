@@ -1,0 +1,79 @@
+{
+    "name": "Parth Sharma",
+    "contact": {
+      "phone": "9971361784",
+      "email": "parthshr370@gmail.com",
+      "linkedin": "LinkedIn",
+      "twitter": "Twitter",
+      "github": "Github"
+    },
+    "education": [
+      {
+        "institution": "Manipal University Jaipur",
+        "degree": "Bachelor of Technology in Data Science",
+        "location": "Jaipur",
+        "duration": "Sep 2022 – Present"
+      },
+      {
+        "institution": "Blue Bells Public School",
+        "board": "CBSE",
+        "location": "Gurugram",
+        "duration": "April 2007 – May 2022"
+      }
+    ],
+    "experience": [
+      {
+        "title": "Research Intern",
+        "company": "Indian Institue of Information Technology Allahabad",
+        "location": "Allahabad, India",
+        "duration": "May 2024 – July 2024",
+        "responsibilities": [
+          "Developed a fusion model using LSTM and CNN to improve process prediction.",
+          "Fine-tuned LLMs for process modelling using POWL and PM4PY.",
+          "Enhanced the PromoAI Framework for large scale databases.",
+          "Tech Stack: Pytorch, Langchain, PM4PY, Pandas"
+        ]
+      }
+    ],
+    "projects": [
+      {
+        "name": "HR Portal Agent | Capstone Project",
+        "details": [
+          "Developed a distributed multi-agent HR system for OCR-based resume extraction, candidate matching, and interview question generation.",
+          "Employed LangGraph for orchestrating agent workflows and integrated RESTful APIs for asynchronous communication.",
+          "Tools: LangChain, LangGraph, MongoDB, Flask/FastAPI, Docker"
+        ]
+      },
+      {
+        "name": "Email AI Agent | Capstone Project",
+        "details": [
+          "Built a multi-agent orchestration system to automate email classification and response drafting.",
+          "Integrated SMTP for real-time email sending and coordinated agent workflows using LangGraph.",
+          "Tools: LangChain, LangGraph, LangSmith, DeepSeek API"
+        ]
+      }
+    ],
+    "technical_skills": {
+      "languages": ["Python", "Java", "SQL", "HTML/CSS", "C"],
+      "frameworks_technologies": [
+        "PyTorch", "TensorFlow", "PM4PY", "Librosa", "Pandas", "NumPy", 
+        "Matplotlib", "PyTorch Lightning", "Keras", "Flask", "Streamlit", "EEGLAB"
+      ],
+      "developer_tools": [
+        "Git", "Docker", "Linux", "LaTeX", "Matlab", "EEGLAB", 
+        "PRoM (Process Mining)", "GitHub"
+      ],
+      "data_analysis": [
+        "Signal Processing", "Spectral Analysis", "EEG Data Analysis", 
+        "Statistical Analysis", "Machine Learning", "Data Visualization"
+      ],
+      "mathematics": [
+        "Stochastic Modelling", "Linear Algebra", "Calculus", 
+        "Advanced Statistics", "Optimization"
+      ],
+      "research_documentation": [
+        "Research Methodology", "Technical Writing", 
+        "Project Documentation", "Blogging"
+      ]
+    }
+  }

@@ -1,0 +1,21 @@
+{
+  "template_id": "domain_specific_ml_001",
+  "category": "domain_specific",
+  "subcategory": "machine_learning",
+  "question_type": "short_answer",
+  "difficulty": "hard",
+  "template_text": "Describe how you would implement {algorithm} from scratch. What are the key challenges?",
+  "variables": {
+    "algorithm": [
+      "gradient descent",
+      "backpropagation",
+      "k-means clustering",
+      "random forest"
+    ]
+  },
+  "requires_skills": [
+    "machine_learning",
+    "algorithms",
+    "mathematics"
+  ]
+}

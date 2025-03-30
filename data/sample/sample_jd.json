@@ -1,0 +1,28 @@
+{
+    "title": "Machine Learning Engineer",
+    "company": "TechInnovate",
+    "location": "Remote",
+    "description": "We are looking for a Machine Learning Engineer to join our team and help us build intelligent applications.",
+    "requirements": [
+      "Bachelor's or Master's degree in Computer Science, Data Science, or a related field",
+      "Strong programming skills in Python",
+      "Experience with machine learning frameworks such as TensorFlow or PyTorch",
+      "Understanding of data structures, algorithms, and software design principles",
+      "Experience with data processing and analysis libraries like Pandas and NumPy",
+      "Knowledge of database systems"
+    ],
+    "responsibilities": [
+      "Design and implement machine learning models",
+      "Analyze and preprocess large datasets",
+      "Deploy and monitor machine learning systems",
+      "Collaborate with cross-functional teams",
+      "Stay up-to-date with the latest research and technologies"
+    ],
+    "required_skills": [
+      "python", "machine_learning", "tensorflow", "pytorch", "pandas", "numpy", 
+      "data_analysis", "algorithms"
+    ],
+    "preferred_skills": [
+      "flask", "docker", "cloud_computing", "nlp", "computer_vision"
+    ]
+  }

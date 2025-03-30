@@ -1,0 +1,21 @@
+{
+  "template_id": "core_cs_dsa_001",
+  "category": "core_cs",
+  "subcategory": "dsa",
+  "question_type": "coding",
+  "difficulty": "medium",
+  "template_text": "Write a function to find the {order} element in a linked list.",
+  "variables": {
+    "order": [
+      "kth",
+      "middle",
+      "last",
+      "third-to-last"
+    ]
+  },
+  "requires_skills": [
+    "algorithms",
+    "data_structures",
+    "linked_lists"
+  ]
+}

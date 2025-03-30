@@ -1,0 +1,26 @@
+{
+  "template_id": "core_cs_dbms_001",
+  "category": "core_cs",
+  "subcategory": "dbms",
+  "question_type": "open_ended",
+  "difficulty": "medium",
+  "template_text": "Explain the difference between {concept1} and {concept2} in database management systems. Provide examples of when you would use each.",
+  "variables": {
+    "concept1": [
+      "normalization",
+      "ACID properties",
+      "indexing",
+      "transactions"
+    ],
+    "concept2": [
+      "denormalization",
+      "BASE properties",
+      "partitioning",
+      "stored procedures"
+    ]
+  },
+  "requires_skills": [
+    "database",
+    "sql"
+  ]
+}

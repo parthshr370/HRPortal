@@ -1,0 +1,26 @@
+{
+  "template_id": "domain_specific_ml_002",
+  "category": "domain_specific",
+  "subcategory": "machine_learning",
+  "question_type": "multiple_choice",
+  "difficulty": "medium",
+  "template_text": "Which of the following is NOT a common way to address overfitting in machine learning models?\n\nA) {option_a}\nB) {option_b}\nC) {option_c}\nD) {option_d}",
+  "variables": {
+    "option_a": [
+      "Regularization"
+    ],
+    "option_b": [
+      "Cross-validation"
+    ],
+    "option_c": [
+      "Feature engineering"
+    ],
+    "option_d": [
+      "Increasing model complexity"
+    ]
+  },
+  "requires_skills": [
+    "machine_learning",
+    "model_evaluation"
+  ]
+}
