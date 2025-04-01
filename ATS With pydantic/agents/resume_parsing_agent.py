@@ -1,9 +1,9 @@
 import json
 import re
-from typing import Dict, Any, Union
+from typing import Dict, Any, Union, List
 from config.openrouter_config import OpenRouterConfig
 from pydantic import ValidationError
-from models.resume_models import ParsedResume, PersonalInfo
+from models.resume_models import ParsedResume, PersonalInfo, Education, Experience
 
 class ResumeParsingAgent:
     def __init__(self, api_key: str, model_name: str):
@@ -88,10 +88,7 @@ class ResumeParsingAgent:
             "summary": "",
             "education": [],
             "experience": [],
-            "skills": {
-                "technical": [],
-                "soft": []
-            },
+            "skills": [],  # Changed to a list from a dictionary
             "certifications": [],
             "projects": []
         }
@@ -143,17 +140,24 @@ class ResumeParsingAgent:
                     if field_match:
                         field = field_match.group(1).strip()
                     
-                    gpa = ""
+                    # FIX: Handle GPA - set to None if empty string
+                    gpa = None
                     gpa_match = re.search(r'\*\s*GPA:\s*(.*?)(?=\n|\*|$)', entry_details)
                     if gpa_match:
-                        gpa = gpa_match.group(1).strip()
+                        gpa_value = gpa_match.group(1).strip()
+                        if gpa_value and gpa_value not in ["Not provided", "None listed"]:
+                            try:
+                                # Try to convert to float, set to None if fails
+                                gpa = float(gpa_value) if gpa_value else None
+                            except ValueError:
+                                gpa = None
                     
                     raw_data["education"].append({
                         "institution": institution,
                         "degree": degree,
                         "field": field,
                         "graduation_date": graduation_date,
-                        "gpa": gpa
+                        "gpa": gpa  # Now properly handled
                     })
             
             # Extract experience
@@ -210,7 +214,10 @@ class ResumeParsingAgent:
                         "achievements": []  # We'll use responsibilities for both in this format
                     })
             
-            # Extract skills
+            # Extract skills - FIX: Convert from dictionary to list structure
+            technical_skills = []
+            soft_skills = []
+            
             skills_section = re.search(r'SKILLS:\s*\n(.*?)(?=\n\n|PROJECTS:|CERTIFICATIONS:|ADDITIONAL INFO:|$)', template_output, re.DOTALL | re.IGNORECASE)
             if skills_section:
                 skills_text = skills_section.group(1)
@@ -219,13 +226,16 @@ class ResumeParsingAgent:
                 if tech_skills_match:
                     tech_skills = tech_skills_match.group(1).strip()
                     if tech_skills and tech_skills not in ["[List all technical skills]", "Not provided", "None listed"]:
-                        raw_data["skills"]["technical"] = [skill.strip() for skill in tech_skills.split(',')]
+                        technical_skills = [skill.strip() for skill in tech_skills.split(',')]
                 
                 soft_skills_match = re.search(r'Soft:\s*(.*?)(?=\n|$)', skills_text, re.IGNORECASE)
                 if soft_skills_match:
                     soft_skills = soft_skills_match.group(1).strip()
                     if soft_skills and soft_skills not in ["[List all soft skills]", "Not provided", "None listed"]:
-                        raw_data["skills"]["soft"] = [skill.strip() for skill in soft_skills.split(',')]
+                        soft_skills = [skill.strip() for skill in soft_skills.split(',')]
+            
+            # FIX: Combine technical and soft skills into a single list
+            raw_data["skills"] = technical_skills + soft_skills
             
             # Extract projects
             projects_section = re.search(r'PROJECTS:\s*\n(.*?)(?=\n\n|CERTIFICATIONS:|ADDITIONAL INFO:|$)', template_output, re.DOTALL | re.IGNORECASE)
@@ -295,23 +305,63 @@ class ResumeParsingAgent:
                             "date": date
                         })
             
+            # Pre-validate and fix common issues before Pydantic validation
+            self._fix_validation_issues(raw_data)
+            
             # Instantiate Pydantic model from the dictionary
             try:
-                 parsed_resume_obj = ParsedResume(**raw_data)
-                 return parsed_resume_obj
+                parsed_resume_obj = ParsedResume(**raw_data)
+                print("\nSuccessfully created ParsedResume from extracted data")
+                return parsed_resume_obj
             except ValidationError as ve:
-                 print(f"Error validating parsed resume data: {ve}")
-                 # Log detailed errors if needed: print(ve.json())
-                 # Re-raise the validation error to be caught in parse_resume
-                 raise ve
+                print(f"Error validating parsed resume data: {ve}")
+                # Try to fix the validation errors
+                self._fix_validation_errors(raw_data, ve)
+                # Try again with the fixed data
+                parsed_resume_obj = ParsedResume(**raw_data)
+                return parsed_resume_obj
             
         except Exception as e:
             print(f"Error converting template to JSON: {str(e)}")
             import traceback
             traceback.print_exc()
             # Return an empty model instance in case of regex/extraction errors
-            # Or raise to let parse_resume handle? Raising for now.
-            raise e # Re-raise general exceptions
+            return self.create_empty_structure()
+    
+    def _fix_validation_issues(self, data: Dict[str, Any]) -> None:
+        """Pre-emptively fix common validation issues in the extracted data"""
+        # Fix education entries
+        for edu in data.get("education", []):
+            # Fix GPA field
+            if "gpa" in edu and (edu["gpa"] == "" or edu["gpa"] is None):
+                edu["gpa"] = None
+        
+        # Ensure skills is a list, not a dict
+        if isinstance(data.get("skills"), dict):
+            technical = data["skills"].get("technical", [])
+            soft = data["skills"].get("soft", [])
+            data["skills"] = technical + soft
+    
+    def _fix_validation_errors(self, data: Dict[str, Any], validation_error: ValidationError) -> None:
+        """Fix data based on specific validation errors"""
+        errors = validation_error.errors()
+        
+        for error in errors:
+            loc = error.get('loc', ())
+            type_error = error.get('type', '')
+            
+            # Fix GPA validation errors in education entries
+            if len(loc) >= 2 and loc[0] == 'education' and isinstance(loc[1], int) and 'gpa' in loc:
+                if 'float_parsing' in type_error:
+                    if loc[1] < len(data['education']):
+                        data['education'][loc[1]]['gpa'] = None
+            
+            # Fix skills structure errors
+            if loc and loc[0] == 'skills' and 'list_type' in type_error:
+                if isinstance(data.get('skills'), dict):
+                    technical = data['skills'].get('technical', [])
+                    soft = data['skills'].get('soft', [])
+                    data['skills'] = technical + soft
 
     def create_empty_structure(self) -> ParsedResume:
         """Create an empty resume structure using Pydantic model"""

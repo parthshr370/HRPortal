@@ -1,5 +1,5 @@
 import json
-from typing import Dict, Any
+from typing import Dict, Any, List
 from config.openrouter_config import OpenRouterConfig
 import re
 from models.resume_models import ParsedResume
@@ -143,6 +143,107 @@ class JobMatchingAgent:
             additional_insights=["Analysis failed - please try again"]
         )
 
+    def _transform_api_response(self, raw_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Transform API response to match Pydantic model structure"""
+        try:
+            print("\nTransforming raw API response data:")
+            print(f"Raw match_score: {raw_data.get('match_score', 0)}")
+            
+            # Extract scores and convert from 0-100 to 0.0-1.0
+            match_score = raw_data.get("match_score", 0) / 100.0
+            
+            # Extract analysis sections with safe defaults
+            analysis = raw_data.get("analysis", {})
+            skills = analysis.get("skills", {})
+            experience = analysis.get("experience", {})
+            education = analysis.get("education", {})
+            additional = analysis.get("additional", {})
+            
+            # Debug logging
+            print(f"Skills score: {skills.get('score', 0)}")
+            print(f"Experience score: {experience.get('score', 0)}")
+            print(f"Education score: {education.get('score', 0)}")
+            
+            # Create transformed data structure
+            transformed_data = {
+                "overall_match_score": match_score,
+                "skills_match": {
+                    "score": skills.get("score", 0) / 100.0,
+                    "details": self._combine_matches_gaps(
+                        skills.get("matches", []),
+                        skills.get("gaps", [])
+                    )
+                },
+                "experience_match": {
+                    "score": experience.get("score", 0) / 100.0,
+                    "details": self._combine_matches_gaps(
+                        experience.get("matches", []),
+                        experience.get("gaps", [])
+                    )
+                },
+                "education_match": {
+                    "score": education.get("score", 0) / 100.0,
+                    "details": self._combine_matches_gaps(
+                        education.get("matches", []),
+                        education.get("gaps", [])
+                    )
+                },
+                "additional_insights": []
+            }
+            
+            # Add additional insights
+            recommendation = raw_data.get("recommendation", "")
+            if recommendation:
+                transformed_data["additional_insights"] = [recommendation]
+            
+            # Add strengths and considerations
+            strengths = raw_data.get("key_strengths", [])
+            considerations = raw_data.get("areas_for_consideration", [])
+            
+            if strengths:
+                transformed_data["additional_insights"].append("Key Strengths:")
+                transformed_data["additional_insights"].extend([f"+ {strength}" for strength in strengths])
+            
+            if considerations:
+                transformed_data["additional_insights"].append("Areas for Consideration:")
+                transformed_data["additional_insights"].extend([f"- {area}" for area in considerations])
+            
+            # Ensure we have at least one additional insight
+            if not transformed_data["additional_insights"]:
+                transformed_data["additional_insights"] = ["No additional insights available"]
+            
+            print("\nTransformed data:")
+            print(f"overall_match_score: {transformed_data['overall_match_score']}")
+            print(f"skills_match.score: {transformed_data['skills_match']['score']}")
+            print(f"experience_match.score: {transformed_data['experience_match']['score']}")
+            print(f"education_match.score: {transformed_data['education_match']['score']}")
+            
+            return transformed_data
+        
+        except Exception as e:
+            print(f"Error transforming API response: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            # Return a minimal valid structure on error
+            return {
+                "overall_match_score": 0.0,
+                "skills_match": {"score": 0.0, "details": ["Error transforming API response"]},
+                "experience_match": {"score": 0.0, "details": ["Error transforming API response"]},
+                "education_match": {"score": 0.0, "details": ["Error transforming API response"]},
+                "additional_insights": ["Error occurred while transforming the analysis results"]
+            }
+
+    def _combine_matches_gaps(self, matches: List[str], gaps: List[str]) -> List[str]:
+        """Combine matches and gaps into a single list of details"""
+        result = []
+        if matches:
+            result.append("Matches:")
+            result.extend([f"+ {match}" for match in matches])
+        if gaps:
+            result.append("Gaps:")
+            result.extend([f"- {gap}" for gap in gaps])
+        return result if result else ["No specific details available"]
+
     def match_job(self, candidate_profile: ParsedResume, job_description: str) -> MatchAnalysis:
         """Compare candidate profile against job description and return match analysis"""
         try:
@@ -175,8 +276,19 @@ class JobMatchingAgent:
             try:
                 # Attempt to load the cleaned JSON into a dictionary first
                 raw_analysis_data = json.loads(cleaned_json)
+                print("\nRaw API data structure:")
+                print(json.dumps(raw_analysis_data, indent=2)[:500] + "..." if len(json.dumps(raw_analysis_data, indent=2)) > 500 else json.dumps(raw_analysis_data, indent=2))
+                
+                # Transform the data to match the Pydantic model structure
+                transformed_data = self._transform_api_response(raw_analysis_data)
+                print("\nAfter transformation:")
+                print(json.dumps(transformed_data, indent=2)[:500] + "..." if len(json.dumps(transformed_data, indent=2)) > 500 else json.dumps(transformed_data, indent=2))
+                
                 # Now parse and validate using Pydantic
-                match_analysis = MatchAnalysis(**raw_analysis_data)
+                match_analysis = MatchAnalysis(**transformed_data)
+                print("\nFinal Pydantic model:")
+                print(json.dumps(match_analysis.dict(), indent=2)[:500] + "..." if len(json.dumps(match_analysis.dict(), indent=2)) > 500 else json.dumps(match_analysis.dict(), indent=2))
+                
                 return match_analysis
 
             except json.JSONDecodeError as json_err:

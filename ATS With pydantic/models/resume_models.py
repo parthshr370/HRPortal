@@ -1,11 +1,11 @@
-from typing import List, Optional
+from typing import List, Optional, Union
 from pydantic import BaseModel, Field
 
 class Education(BaseModel):
     degree: str = "Not specified"
     institution: str = "Not specified"
     graduation_year: Optional[int] = None
-    gpa: Optional[float] = None
+    gpa: Optional[float] = None  # Changed to Optional[float]
     field: Optional[str] = None
     graduation_date: Optional[str] = None
 
@@ -42,9 +42,9 @@ class ParsedResume(BaseModel):
     summary: Optional[str] = "Resume summary pending"
     education: List[Education] = Field(default_factory=list)
     experience: List[Experience] = Field(default_factory=list)
-    skills: List[str] = Field(default_factory=lambda: ["Skills pending analysis"])
+    skills: List[str] = Field(default_factory=list)  # Changed to ensure it's a list
     projects: Optional[List[Project]] = Field(default_factory=list)
     certifications: Optional[List[Certification]] = Field(default_factory=list)
 
     class Config:
-        validate_assignment = True 
+        validate_assignment = True
