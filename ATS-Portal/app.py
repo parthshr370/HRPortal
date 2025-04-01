@@ -8,6 +8,10 @@ from utils.text_preprocessing import TextPreprocessor
 from agents.resume_parsing_agent import ResumeParsingAgent
 from agents.job_matching_agent import JobMatchingAgent
 from agents.decision_feedback_agent import DecisionFeedbackAgent
+from ui.dashboard import create_analysis_dashboard
+from ui.candidate_summary import create_candidate_summary_page
+from ui.social_media_analysis import create_social_media_analysis_section, create_screening_summary, create_verification_progress
+from ui.resume_highlight import display_resume_with_feedback
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
@@ -22,34 +26,149 @@ if NON_REASONING_API_KEY:
     MODELS['non_reasoning']['api_key'] = NON_REASONING_API_KEY
 else:
     st.error("Error: NON_REASONING_API_KEY not found in .env file. Please set it.")
-    # Optionally disable parts of the app that require this key
-    # st.stop() # Uncomment to stop execution if key is critical
 
 if REASONING_API_KEY:
     MODELS['reasoning']['api_key'] = REASONING_API_KEY
 else:
     st.error("Error: REASONING_API_KEY not found in .env file. Please set it.")
-    # Optionally disable parts of the app that require this key
-    # st.stop() # Uncomment to stop execution if key is critical
 
+# --- Page Configuration ---
+st.set_page_config(
+    page_title="ATS Portal: Resume Analyzer & Job Matcher",
+    page_icon="📊",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 
-# --- Streamlit App Interface ---
-st.title("ATS Portal: Resume Analyzer & Job Matcher")
+# --- Global State Management ---
+def initialize_session_state():
+    """Initialize session state variables if they don't exist"""
+    if 'parsed_resume' not in st.session_state:
+        st.session_state.parsed_resume = None
+    if 'match_analysis' not in st.session_state:
+        st.session_state.match_analysis = None
+    if 'decision' not in st.session_state:
+        st.session_state.decision = None
+    if 'job_description' not in st.session_state:
+        st.session_state.job_description = ""
+    if 'active_tab' not in st.session_state:
+        st.session_state.active_tab = "Job Description"
 
-# File Uploaders
-st.header("Upload Files")
-resume_file = st.file_uploader("Upload Resume", type=list(SUPPORTED_FILE_TYPES.values()))
-st.markdown("---") # Separator
-st.subheader("Job Description")
-job_desc_file = st.file_uploader("Option 1: Upload Job Description File", type=list(SUPPORTED_FILE_TYPES.values()))
-st.markdown("OR")
-job_desc_text_area = st.text_area("Option 2: Paste Job Description Text Here", height=200)
+# --- Main App Content ---
+def main():
+    # Apply dark theme
+    st.markdown("""
+    <style>
+    .main {
+        background-color: #121212;
+        color: white;
+    }
+    .css-18ni7ap {
+        background-color: #121212;
+    }
+    .css-1d391kg {
+        background-color: #1E2F4D;
+    }
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 2px;
+    }
+    .stTabs [data-baseweb="tab"] {
+        background-color: #1E2F4D;
+        border-radius: 4px 4px 0 0;
+        padding: 10px 16px;
+        border: none;
+        color: white;
+    }
+    .stTabs [aria-selected="true"] {
+        background-color: #2E3F5D !important;
+        border-bottom: 2px solid #1E90FF !important;
+        color: white !important;
+    }
+    .main-header {
+        background-color: #1E2F4D;
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+    .css-18e3th9 {
+        padding-top: 0;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+    
+    # Page Header
+    st.markdown(
+        '<div class="main-header"><h1 style="color: white;">ATS Portal: Resume Analyzer & Job Matcher</h1></div>',
+        unsafe_allow_html=True
+    )
+    
+    # Create a single set of tabs for the entire application
+    tabs = st.tabs(["Job Description", "Resume Scan", "Analysis", "Reports", "Resume Feedback"])
+    
+    # Content for the "Job Description" tab
+    with tabs[0]:
+        st.header("Job Description")
+        job_desc_file = st.file_uploader("Option 1: Upload Job Description File", type=list(SUPPORTED_FILE_TYPES.values()))
+        st.markdown("OR")
+        job_desc_text_area = st.text_area("Option 2: Paste Job Description Text Here", height=200, value=st.session_state.job_description)
+        
+        if job_desc_text_area:
+            st.session_state.job_description = job_desc_text_area
+        
+        if st.button("Save Job Description"):
+            if job_desc_file or job_desc_text_area:
+                st.success("Job description saved successfully!")
+                st.session_state.active_tab = "Resume Scan"
+            else:
+                st.warning("Please provide a job description either by uploading a file or pasting text.")
+    
+    # Content for the "Resume Scan" tab
+    with tabs[1]:
+        st.header("Resume Scan")
+        resume_file = st.file_uploader("Upload Resume", type=list(SUPPORTED_FILE_TYPES.values()))
+        
+        if resume_file and st.button("Process Resume"):
+            process_resume(resume_file, job_desc_file, job_desc_text_area)
+            st.session_state.active_tab = "Analysis"
+    
+    # Content for the "Analysis" tab
+    with tabs[2]:
+        if st.session_state.parsed_resume:
+            create_analysis_dashboard(
+                st.session_state.parsed_resume,
+                st.session_state.match_analysis,
+                st.session_state.decision
+            )
+        else:
+            st.info("Upload and process a resume to see analysis here.")
+    
+    # Content for the "Reports" tab
+    with tabs[3]:
+        if st.session_state.parsed_resume:
+            create_candidate_summary_page(
+                st.session_state.parsed_resume,
+                st.session_state.match_analysis,
+                st.session_state.decision,
+                st.session_state.job_description
+            )
+        else:
+            st.info("Process a resume first to see candidate screening details here.")
+    
+    # Content for the "Resume Feedback" tab
+    with tabs[4]:
+        if st.session_state.parsed_resume:
+            display_resume_with_feedback(
+                st.session_state.parsed_resume,
+                st.session_state.match_analysis
+            )
+        else:
+            st.info("Process a resume first to see detailed feedback.")
 
 # --- Processing Logic ---
-def process_files(resume_file_obj, job_desc_file_obj=None, job_desc_pasted_text=None):
+def process_resume(resume_file_obj, job_desc_file_obj=None, job_desc_pasted_text=None):
     """
     Processes uploaded resume and optional job description (from file or text area).
-    Mirrors the logic of main_cli.py but uses Streamlit for I/O.
     """
     if not resume_file_obj:
         st.warning("Please upload a resume file.")
@@ -61,88 +180,59 @@ def process_files(resume_file_obj, job_desc_file_obj=None, job_desc_pasted_text=
          return
 
     try:
-        # Initialize handlers early
-        file_handler = FileHandler()
-        text_preprocessor = TextPreprocessor()
+        with st.spinner("Processing resume..."):
+            # Initialize handlers
+            file_handler = FileHandler()
+            text_preprocessor = TextPreprocessor()
 
-        # Use temp files to work with uploaded resume data
-        with tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(resume_file_obj.name)[1]) as tmp_resume:
-            tmp_resume.write(resume_file_obj.getvalue())
-            resume_path = tmp_resume.name
+            # Save resume to temp file
+            with tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(resume_file_obj.name)[1]) as tmp_resume:
+                tmp_resume.write(resume_file_obj.getvalue())
+                resume_path = tmp_resume.name
 
-        tmp_job_desc_path = None
-        cleaned_job_desc = None
+            tmp_job_desc_path = None
+            cleaned_job_desc = None
 
-        # --- Determine Job Description Source ---
-        if job_desc_file_obj:
-            # Prioritize uploaded file
-            with tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(job_desc_file_obj.name)[1]) as tmp_job:
-                tmp_job.write(job_desc_file_obj.getvalue())
-                tmp_job_desc_path = tmp_job.name
-            st.info("Processing uploaded job description file.")
-        elif job_desc_pasted_text:
-            # Use pasted text if no file uploaded
-            # Clean pasted text directly using the initialized preprocessor
-            cleaned_job_desc = text_preprocessor.clean_text(job_desc_pasted_text)
-            st.info("Processing pasted job description text.")
-        # else: No job description provided
+            # Process job description from file or text area
+            if job_desc_file_obj:
+                with tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(job_desc_file_obj.name)[1]) as tmp_job:
+                    tmp_job.write(job_desc_file_obj.getvalue())
+                    tmp_job_desc_path = tmp_job.name
+                st.info("Processing uploaded job description file.")
+            elif job_desc_pasted_text:
+                cleaned_job_desc = text_preprocessor.clean_text(job_desc_pasted_text)
+                st.session_state.job_description = job_desc_pasted_text
+                st.info("Processing pasted job description text.")
 
-        # --- Resume Processing ---
-        st.header("Resume Processing")
-
-        with st.spinner("Extracting and cleaning resume text..."):
-            st.subheader("1. Text Extraction & Cleaning")
+            # Extract and parse resume text
             resume_text = file_handler.extract_text(resume_path)
-            st.text(f"Extracted text length: {len(resume_text)}")
-            with st.expander("Show Extracted Text (First 500 chars)"):
-                st.text(resume_text[:500] + "...")
-
             cleaned_resume_text = text_preprocessor.clean_text(resume_text)
-            st.text(f"Cleaned text length: {len(cleaned_resume_text)}")
-            with st.expander("Show Cleaned Text (First 500 chars)"):
-                st.text(cleaned_resume_text[:500] + "...")
 
-        with st.spinner("Parsing resume structure..."):
-            st.subheader("2. Resume Parsing")
+            # Parse resume
             resume_parser = ResumeParsingAgent(
                 api_key=MODELS['non_reasoning']['api_key'],
                 model_name=MODELS['non_reasoning']['name']
             )
             parsed_resume = resume_parser.parse_resume(cleaned_resume_text)
-            st.success("Resume parsed successfully!")
-            with st.expander("Show Parsed Resume (JSON)"):
-                st.json(parsed_resume)
+            st.session_state.parsed_resume = parsed_resume
 
-        # --- Job Matching (if job description provided from either source) ---
-        job_desc_available = tmp_job_desc_path or cleaned_job_desc
-
-        if job_desc_available:
-            st.header("Job Description Matching")
-            with st.spinner("Processing job description and analyzing match..."):
-                st.subheader("3. Job Description Processing")
-
-                # Extract and clean text *only if* a file was uploaded
-                # If text was pasted, cleaned_job_desc is already populated
+            # Process job matching if available
+            job_desc_available = tmp_job_desc_path or cleaned_job_desc
+            if job_desc_available:
+                # Extract text from file if needed
                 if tmp_job_desc_path:
                     job_desc_text = file_handler.extract_text(tmp_job_desc_path)
-                    cleaned_job_desc = text_preprocessor.clean_text(job_desc_text) # Clean extracted text
-
-                # Display cleaned job description (from file or text area)
-                st.text(f"Cleaned job description length: {len(cleaned_job_desc)}")
-                with st.expander("Show Cleaned Job Description (First 500 chars)"):
-                    st.text(cleaned_job_desc[:500] + "...")
-
-                st.subheader("4. Match Analysis")
+                    cleaned_job_desc = text_preprocessor.clean_text(job_desc_text)
+                
+                # Match job description against resume
                 job_matcher = JobMatchingAgent(
                     api_key=MODELS['reasoning']['api_key'],
                     model_name=MODELS['reasoning']['name']
                 )
                 match_analysis = job_matcher.match_job(parsed_resume, cleaned_job_desc)
-                st.success("Job match analysis complete!")
-                with st.expander("Show Match Analysis (JSON)"):
-                    st.json(match_analysis)
+                st.session_state.match_analysis = match_analysis
 
-                st.subheader("5. Hiring Decision Feedback")
+                # Generate hiring decision
                 decision_agent = DecisionFeedbackAgent(
                     api_key=MODELS['reasoning']['api_key'],
                     model_name=MODELS['reasoning']['name']
@@ -152,50 +242,215 @@ def process_files(resume_file_obj, job_desc_file_obj=None, job_desc_pasted_text=
                     match_analysis=match_analysis,
                     job_requirements=cleaned_job_desc
                 )
-                st.success("Hiring decision generated!")
-
-                # Display Decision Summary (formatted like main_cli.py)
-                st.text(f"Status: {decision['decision']['status']}")
-                st.text(f"Confidence Score: {decision['decision']['confidence_score']}%")
-                st.text(f"Recommended Interview Stage: {decision['decision']['interview_stage']}")
-
-                st.markdown("**Key Strengths:**")
-                for strength in decision['rationale']['key_strengths']:
-                    st.markdown(f"- {strength}")
-
-                st.markdown("**Areas of Concern:**")
-                for concern in decision['rationale']['concerns']:
-                    st.markdown(f"- {concern}")
-
-                st.markdown("**Next Steps:**")
-                for action in decision['next_steps']['immediate_actions']:
-                    st.markdown(f"- {action}")
-
-                with st.expander("Show Full Decision Feedback (JSON)"):
-                    st.json(decision)
+                st.session_state.decision = decision
+                
+                st.success("Resume processed and analyzed successfully!")
+            else:
+                st.warning("No job description provided. Only resume parsing completed.")
+                st.session_state.match_analysis = None
+                st.session_state.decision = None
 
     except Exception as e:
         st.error(f"An error occurred during processing: {str(e)}")
-        # Consider adding more detailed error logging or traceback for debugging
-        # import traceback
-        # st.code(traceback.format_exc())
+        import traceback
+        st.error(traceback.format_exc())
 
     finally:
         # Clean up temporary files
         if 'resume_path' in locals() and os.path.exists(resume_path):
-            os.unlink(resume_path)
-        if tmp_job_desc_path and os.path.exists(tmp_job_desc_path):
-            os.unlink(tmp_job_desc_path)
+            try:
+                os.unlink(resume_path)
+            except:
+                pass
+        if 'tmp_job_desc_path' in locals() and tmp_job_desc_path and os.path.exists(tmp_job_desc_path):
+            try:
+                os.unlink(tmp_job_desc_path)
+            except:
+                pass
 
+# --- Sidebar Content ---
+def add_sidebar():
+    st.sidebar.header("Options")
+    st.sidebar.markdown("---")
+    
+    st.sidebar.header("About")
+    st.sidebar.info(
+        """
+        This ATS Portal allows you to:
+        - Parse resumes into structured data
+        - Match candidates against job requirements
+        - Get detailed analysis and hiring recommendations
+        - Visualize candidate metrics and scores
+        """
+    )
+    
+    st.sidebar.markdown("---")
+    st.sidebar.header("Settings")
+    
+    # Add theme option (doesn't actually change the theme yet, just for UI purposes)
+    theme = st.sidebar.selectbox(
+        "Theme",
+        ["Dark", "Light"],
+        index=0
+    )
+    
+    # Add sample data option
+    if st.sidebar.button("Load Sample Data"):
+        load_sample_data()
+        st.sidebar.success("Sample data loaded!")
 
-# Trigger processing when resume is uploaded
-if resume_file:
-    # Pass both job description sources (file object and text area value) to the processing function
-    process_files(resume_file, job_desc_file, job_desc_text_area)
-else:
-    st.info("Upload a resume to begin analysis. Optionally, upload or paste a job description for matching.")
+def load_sample_data():
+    """Load sample data for demonstration"""
+    try:
+        with open('parsed_resume.json', 'r') as f:
+            parsed_resume = json.load(f)
+            st.session_state.parsed_resume = parsed_resume
+        
+        # Create sample match analysis
+        match_analysis = {
+            "match_score": 72,
+            "analysis": {
+                "skills": {
+                    "score": 85,
+                    "matches": ["Python", "PyTorch", "TensorFlow", "Machine Learning"],
+                    "gaps": ["Docker", "Kubernetes"]
+                },
+                "experience": {
+                    "score": 65,
+                    "matches": ["Research Experience", "Data Analysis"],
+                    "gaps": ["Industry Experience", "Team Leadership"]
+                },
+                "education": {
+                    "score": 90,
+                    "matches": ["Computer Science Degree", "Data Science Focus"],
+                    "gaps": []
+                },
+                "additional": {
+                    "score": 60,
+                    "matches": ["Project Documentation", "Technical Writing"],
+                    "gaps": ["Certifications"]
+                }
+            },
+            "recommendation": "The candidate shows strong technical skills in machine learning and data science, with excellent educational background. Consider proceeding with technical interviews to verify practical experience.",
+            "key_strengths": [
+                "Strong technical skills in ML/AI",
+                "Excellent educational background",
+                "Research experience"
+            ],
+            "areas_for_consideration": [
+                "Limited industry experience",
+                "Missing some DevOps skills",
+                "Leadership experience unclear"
+            ]
+        }
+        st.session_state.match_analysis = match_analysis
+        
+        # Create sample decision
+        decision = {
+            "decision": {
+                "status": "PROCEED",
+                "confidence_score": 72,
+                "interview_stage": "TECHNICAL"
+            },
+            "rationale": {
+                "key_strengths": [
+                    "Strong technical skills in machine learning and AI",
+                    "Excellent academic background in relevant field",
+                    "Demonstrated research experience"
+                ],
+                "concerns": [
+                    "Limited industry experience",
+                    "Some required skills missing",
+                    "Leadership experience unclear"
+                ],
+                "risk_factors": [
+                    "May need additional training on DevOps tools",
+                    "Possible adjustment period for industry environment"
+                ]
+            },
+            "recommendations": {
+                "interview_focus": [
+                    "Practical application of ML/AI skills",
+                    "Problem-solving approach",
+                    "Adaptability to industry workflows"
+                ],
+                "skill_verification": [
+                    "Python coding proficiency",
+                    "Understanding of ML frameworks",
+                    "Data analysis skills"
+                ],
+                "discussion_points": [
+                    "Interest in acquiring DevOps skills",
+                    "Team collaboration experience",
+                    "Learning goals and career aspirations"
+                ]
+            },
+            "hiring_manager_notes": {
+                "salary_band_fit": "Mid-level based on skills and experience",
+                "growth_trajectory": "Strong potential for technical growth path",
+                "team_fit_considerations": "Would benefit from mentoring by senior team members",
+                "onboarding_requirements": [
+                    "DevOps tools training",
+                    "Industry best practices overview",
+                    "Team workflow integration"
+                ]
+            },
+            "next_steps": {
+                "immediate_actions": [
+                    "Schedule technical interview",
+                    "Prepare coding assessment",
+                    "Check references for research work"
+                ],
+                "required_approvals": [
+                    "Hiring Manager approval for interview stage",
+                    "Technical Team Lead review"
+                ],
+                "timeline_recommendation": "Proceed to technical interview within 1-2 weeks"
+            }
+        }
+        st.session_state.decision = decision
+        
+        # Sample job description
+        st.session_state.job_description = """
+        Machine Learning Research Engineer
 
-# Add instructions or footer
-st.sidebar.header("About")
-st.sidebar.info("This app uses AI agents to parse resumes, match them against job descriptions, and provide hiring recommendations.")
-st.sidebar.info("Ensure your `.env` file has `NON_REASONING_API_KEY` and `REASONING_API_KEY` set.") 
+        Job Description:
+        We are seeking a talented Machine Learning Research Engineer with a strong background in deep learning and signal processing. The ideal candidate will work on cutting-edge research projects involving neural networks and process modeling.
+
+        Required Skills:
+        - Strong programming skills in Python
+        - Experience with deep learning frameworks (PyTorch, TensorFlow)
+        - Knowledge of signal processing and data analysis
+        - Familiarity with research methodologies
+        - Experience with version control (Git)
+
+        Preferred Skills:
+        - Experience with EEG data analysis
+        - Knowledge of process mining
+        - Familiarity with Docker
+        - Experience with scientific writing and documentation
+        - Background in statistical analysis
+
+        Education:
+        - Bachelor's or Master's degree in Computer Science, Data Science, or related field
+        - Currently enrolled students with relevant research experience will be considered
+
+        Responsibilities:
+        - Develop and implement machine learning models
+        - Conduct research experiments and document findings
+        - Collaborate with cross-functional teams
+        - Present research findings and technical documentation
+        - Optimize existing models for better performance
+
+        Experience:
+        - Research experience in machine learning/deep learning
+        - Previous internships in related fields
+        - Demonstrated project work with neural networks
+        """
+    except Exception as e:
+        st.error(f"Error loading sample data: {str(e)}")
+
+if __name__ == "__main__":
+    initialize_session_state()
+    add_sidebar()
+    main()
