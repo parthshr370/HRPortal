@@ -1,0 +1,63 @@
+{
+  "match_score": 85,
+  "analysis": {
+    "skills": {
+      "score": 90,
+      "matches": [
+        "Python \u2013 demonstrated strong proficiency with Python as required",
+        "PyTorch and TensorFlow \u2013 direct experience with deep learning frameworks",
+        "Signal Processing \u2013 relevant skill with a strong foundation in signal processing",
+        "EEG Data Analysis \u2013 experience in EEG analysis aligns with the preferred skills",
+        "Process Mining \u2013 working with PM4PY and PromoAI Framework shows competence in process modeling",
+        "Statistical Analysis \u2013 background in advanced statistics supports research requirements",
+        "Git and Docker \u2013 experience in version control and containerization is clearly evident",
+        "Research Methodology and Technical Writing \u2013 soft skills support the research and documentation aspects"
+      ],
+      "gaps": [
+        "No explicit mention of scientific publications or formal research writing, which might further validate research depth"
+      ]
+    },
+    "experience": {
+      "score": 80,
+      "matches": [
+        "Research Intern at Indian Institute of Information Technology Allahabad \u2013 involved in developing and optimizing fusion models with LSTM and CNN",
+        "Fusion model development \u2013 practical experience in neural network-based process prediction",
+        "Process modeling with PM4PY \u2013 aligns with job requirement on process mining and modeling",
+        "Internship research projects \u2013 demonstration of experimental research in machine learning and deep learning"
+      ],
+      "gaps": [
+        "Limited long-term industry or academic research experience beyond one internship"
+      ]
+    },
+    "education": {
+      "score": 80,
+      "matches": [
+        "Bachelor of Technology in Data Science \u2013 directly relevant to the domain of the role",
+        "Relevant academic background in a technical field matching the job description"
+      ],
+      "gaps": [
+        "Degree is still in progress, which may be a consideration depending on the employer\u2019s requirements"
+      ]
+    },
+    "additional": {
+      "score": 85,
+      "matches": [
+        "Diverse and relevant project portfolio \u2013 projects involving agent workflows and research on deep learning models demonstrate initiative and technical capability",
+        "Soft skills in technical writing and documentation \u2013 beneficial for research and collaborative environments"
+      ],
+      "gaps": [
+        "No certifications provided \u2013 adding formal certifications or publications could enhance the profile",
+        "Project descriptions in some cases are abbreviated, and further detail could strengthen evidence of hands-on expertise"
+      ]
+    }
+  },
+  "recommendation": "The candidate is well-suited for the Machine Learning Research Engineer role given their strong foundation in deep learning, signal processing, and related research projects. While the internship experience and technical skills align well with the job description, clarifying the current status of their degree and expanding on project details or certifications could make the profile even stronger.",
+  "key_strengths": [
+    "Strong proficiency in deep learning frameworks (PyTorch, TensorFlow)",
+    "Practical research experience with neural network models and process mining"
+  ],
+  "areas_for_consideration": [
+    "Limited long-term work experience beyond the internship",
+    "Ongoing degree status and lack of formal certifications/publications"
+  ]
+}
