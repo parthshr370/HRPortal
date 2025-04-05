@@ -3,6 +3,7 @@
 import streamlit as st
 import asyncio
 import json
+import traceback
 from main import OAModule
 from models.data_models import Assessment, AssessmentResult
 
@@ -18,16 +19,25 @@ class StreamlitApp:
             st.session_state.responses = {}
         if 'result' not in st.session_state:
             st.session_state.result = None
+        if 'parsing_error' not in st.session_state:
+            st.session_state.parsing_error = None
 
     async def process_markdown(self, markdown_content: str):
         """Process markdown and generate assessment"""
         try:
+            # Reset any previous errors
+            st.session_state.parsing_error = None
+            
+            # Process the markdown
             assessment = await st.session_state.oa_module.process_input(markdown_content)
             st.session_state.assessment = assessment
             st.session_state.responses = {}  # Reset responses
             return True
         except Exception as e:
-            st.error(f"Error processing markdown: {str(e)}")
+            stack_trace = traceback.format_exc()
+            error_message = f"Error processing markdown: {str(e)}\n{stack_trace}"
+            st.session_state.parsing_error = error_message
+            print(error_message)
             return False
 
     def render_question(self, question, question_type: str):
@@ -76,7 +86,10 @@ class StreamlitApp:
             st.session_state.result = result
             return True
         except Exception as e:
-            st.error(f"Error evaluating responses: {str(e)}")
+            stack_trace = traceback.format_exc()
+            error_message = f"Error evaluating responses: {str(e)}\n{stack_trace}"
+            st.error(error_message)
+            print(error_message)
             return False
 
     def render_results(self):
@@ -112,6 +125,58 @@ class StreamlitApp:
         st.title("HR Portal - Online Assessment")
         st.write("Welcome to the online assessment platform. Please upload your markdown file to proceed.")
 
+    def render_parsed_data_preview(self, markdown_content):
+        """Show a preview of the parsed data"""
+        with st.expander("Preview Parsed Data", expanded=False):
+            try:
+                # Call parser directly to show parsed structure
+                parser = st.session_state.oa_module.parser
+                parsed_data = parser.parse_markdown(markdown_content)
+                
+                # Show job description
+                st.subheader("Job Description")
+                job_desc = parsed_data["job_description"]
+                st.write(f"Title: {job_desc.job_title}")
+                st.write(f"Location: {job_desc.location}")
+                st.write(f"Experience Level: {job_desc.experience_level}")
+                
+                with st.expander("Responsibilities"):
+                    for idx, resp in enumerate(job_desc.responsibilities, 1):
+                        st.write(f"{idx}. {resp}")
+                
+                with st.expander("Qualifications"):
+                    for idx, qual in enumerate(job_desc.qualifications, 1):
+                        st.write(f"{idx}. {qual}")
+                
+                # Show resume
+                st.subheader("Resume")
+                resume = parsed_data["resume_data"]
+                st.write(f"Candidate: {resume.personal_info.get('name', 'Unknown')}")
+                
+                with st.expander("Skills"):
+                    for idx, skill in enumerate(resume.skills, 1):
+                        st.write(f"{idx}. {skill}")
+                
+                with st.expander("Experience"):
+                    for idx, exp in enumerate(resume.experience, 1):
+                        st.write(f"{idx}. {exp.get('title', '')} at {exp.get('company', '')}")
+                        st.write(f"   Duration: {exp.get('duration', 'Not specified')}")
+                
+                # Show matches
+                matches = parser.extract_key_matches(parsed_data)
+                st.subheader("Key Matches")
+                
+                with st.expander("Matched Skills"):
+                    for idx, skill in enumerate(matches["skills"], 1):
+                        st.write(f"{idx}. {skill}")
+                
+                # Candidate level
+                level = parser.get_candidate_level(parsed_data)
+                st.write(f"Candidate Level: {level.upper()}")
+                
+            except Exception as e:
+                st.error(f"Error previewing parsed data: {str(e)}")
+
     def run(self):
         """Main app execution"""
         self.render_header()
@@ -123,12 +188,35 @@ class StreamlitApp:
             key="file_uploader"
         )
         
-        if uploaded_file:
+        # Text input alternative
+        use_text_input = st.checkbox("Or enter markdown content directly")
+        markdown_content = ""
+        
+        if use_text_input:
+            markdown_content = st.text_area(
+                "Enter markdown content",
+                height=300,
+                key="markdown_input"
+            )
+        elif uploaded_file:
             markdown_content = uploaded_file.read().decode()
+        
+        # Preview section
+        if markdown_content:
+            with st.expander("Preview Raw Markdown", expanded=False):
+                st.text(markdown_content)
+            
+            if st.button("Preview Parsed Data"):
+                self.render_parsed_data_preview(markdown_content)
             
             if st.button("Generate Assessment"):
                 with st.spinner("Generating assessment..."):
-                    asyncio.run(self.process_markdown(markdown_content))
+                    success = asyncio.run(self.process_markdown(markdown_content))
+                    
+                    if not success and st.session_state.parsing_error:
+                        st.error("Failed to generate assessment")
+                        with st.expander("Error Details"):
+                            st.code(st.session_state.parsing_error)
         
         # Render assessment if available
         if st.session_state.assessment:
@@ -137,6 +225,15 @@ class StreamlitApp:
             st.header("Online Assessment")
             st.write(f"Candidate: {assessment.candidate_name}")
             st.write(f"Position: {assessment.job_title}")
+            
+            # Add download button for assessment
+            assessment_json = json.dumps(assessment.dict(), indent=2)
+            st.download_button(
+                "Download Assessment JSON",
+                assessment_json,
+                "assessment.json",
+                "application/json"
+            )
             
             # Questions sections
             with st.expander("Coding Questions", expanded=True):
@@ -156,6 +253,16 @@ class StreamlitApp:
                 with st.spinner("Evaluating responses..."):
                     if asyncio.run(self.evaluate_responses()):
                         self.render_results()
+                        
+                        # Add download button for results
+                        if st.session_state.result:
+                            result_json = json.dumps(st.session_state.result.dict(), indent=2)
+                            st.download_button(
+                                "Download Results JSON",
+                                result_json,
+                                "assessment_results.json",
+                                "application/json"
+                            )
 
 def main():
     st.set_page_config(

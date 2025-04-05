@@ -5,6 +5,7 @@ import json
 from dotenv import load_dotenv
 from typing import Dict, Any, Optional
 import asyncio
+import traceback
 from agents.parser_agent import ParserAgent
 from agents.question_generator import QuestionGenerator
 from agents.assessment_agent import AssessmentAgent
@@ -31,7 +32,7 @@ class OAModule:
     async def process_input(self, markdown_content: str) -> Assessment:
         """Process markdown input and generate assessment"""
         try:
-            # Parse input content
+            # Parse input content using the simplified approach
             parsed_data = self.parser.parse_markdown(markdown_content)
             
             # Extract key information
@@ -40,12 +41,15 @@ class OAModule:
             matches = self.parser.extract_key_matches(parsed_data)
             level = self.parser.get_candidate_level(parsed_data)
             
+            print(f"Candidate level determined: {level}")
+            print(f"Matched skills: {matches.get('skills', [])}")
+            
             # Generate assessment
             assessment = await self.generator.generate_assessment(
                 candidate_name=resume.personal_info["name"],
-                job_title=job_desc.title,
-                skills=matches["skills"],
-                experience=matches["experience"],
+                job_title=job_desc.job_title,
+                skills=matches.get("skills", []),
+                experience=matches.get("experience", []),
                 level=level,
                 resume_data=resume.dict(),
                 job_desc=job_desc.dict()
@@ -54,7 +58,9 @@ class OAModule:
             return assessment
             
         except Exception as e:
+            stack_trace = traceback.format_exc()
             print(f"Error processing input: {str(e)}")
+            print(f"Stack trace: {stack_trace}")
             raise
         
     async def evaluate_responses(
@@ -67,7 +73,9 @@ class OAModule:
             result = await self.assessor.evaluate_assessment(assessment, responses)
             return result
         except Exception as e:
+            stack_trace = traceback.format_exc()
             print(f"Error evaluating responses: {str(e)}")
+            print(f"Stack trace: {stack_trace}")
             raise
         
     def generate_report(self, result: AssessmentResult) -> str:
@@ -75,7 +83,9 @@ class OAModule:
         try:
             return self.assessor.generate_summary_report(result)
         except Exception as e:
+            stack_trace = traceback.format_exc()
             print(f"Error generating report: {str(e)}")
+            print(f"Stack trace: {stack_trace}")
             raise
 
 async def main(markdown_file: str, response_file: Optional[str] = None):
@@ -85,7 +95,7 @@ async def main(markdown_file: str, response_file: Optional[str] = None):
         oa_module = OAModule()
         
         # Read input markdown
-        with open(markdown_file, 'r') as f:
+        with open(markdown_file, 'r', encoding='utf-8') as f:
             markdown_content = f.read()
             
         # Generate assessment
@@ -96,7 +106,7 @@ async def main(markdown_file: str, response_file: Optional[str] = None):
         
         # If response file provided, evaluate responses
         if response_file:
-            with open(response_file, 'r') as f:
+            with open(response_file, 'r', encoding='utf-8') as f:
                 responses = json.load(f)
                 
             result = await oa_module.evaluate_responses(assessment, responses)
@@ -107,7 +117,9 @@ async def main(markdown_file: str, response_file: Optional[str] = None):
         return assessment
         
     except Exception as e:
+        stack_trace = traceback.format_exc()
         print(f"Error running OA module: {str(e)}")
+        print(f"Stack trace: {stack_trace}")
         raise
 
 if __name__ == "__main__":
@@ -116,7 +128,14 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run Online Assessment Module")
     parser.add_argument("markdown_file", help="Path to input markdown file")
     parser.add_argument("--responses", help="Path to JSON file with responses")
+    parser.add_argument("--output", help="Path to save generated assessment as JSON")
     
     args = parser.parse_args()
     
-    asyncio.run(main(args.markdown_file, args.responses))
+    assessment = asyncio.run(main(args.markdown_file, args.responses))
+    
+    # Save assessment to file if output path is provided
+    if args.output and assessment:
+        with open(args.output, 'w', encoding='utf-8') as f:
+            json.dump(assessment.dict(), f, indent=2)
+            print(f"Assessment saved to {args.output}")

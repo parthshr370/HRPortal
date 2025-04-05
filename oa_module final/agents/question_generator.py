@@ -1,6 +1,7 @@
 # agents/question_generator.py
 
 import json
+import os
 from typing import List, Dict, Any
 from pathlib import Path
 from langchain_openai.chat_models import ChatOpenAI
@@ -19,7 +20,8 @@ class QuestionGenerator:
         self.llm = ChatOpenAI(
             model="google/gemini-flash-1.5",
             temperature=0.7,
-            openai_api_key=non_reasoning_api_key
+            openai_api_key=non_reasoning_api_key,
+            openai_api_base="https://openrouter.ai/api/v1"
         )
         
         self.templates = self._load_templates()
@@ -108,8 +110,34 @@ class QuestionGenerator:
             self._create_default_templates(template_dir)
             
         for template_file in template_dir.glob("*.json"):
-            with open(template_file) as f:
-                templates[template_file.stem] = json.load(f)
+            try:
+                with open(template_file) as f:
+                    template_data = json.load(f)
+                    
+                    # Check if the templates are in the expected format
+                    if "templates" in template_data:
+                        templates[template_file.stem] = template_data["templates"]
+                    else:
+                        templates[template_file.stem] = template_data
+            except Exception as e:
+                print(f"Error loading template file {template_file}: {e}")
+                # Create a default template
+                if template_file.stem == "coding_templates":
+                    templates[template_file.stem] = self._create_default_coding_templates()
+                elif template_file.stem == "system_design_templates":
+                    templates[template_file.stem] = self._create_default_system_design_templates()
+                elif template_file.stem == "behavioral_templates":
+                    templates[template_file.stem] = self._create_default_behavioral_templates()
+        
+        # Ensure we have defaults for all template types
+        if "coding_templates" not in templates or not templates["coding_templates"]:
+            templates["coding_templates"] = self._create_default_coding_templates()
+            
+        if "system_design_templates" not in templates or not templates["system_design_templates"]:
+            templates["system_design_templates"] = self._create_default_system_design_templates()
+            
+        if "behavioral_templates" not in templates or not templates["behavioral_templates"]:
+            templates["behavioral_templates"] = self._create_default_behavioral_templates()
                 
         return templates
 
@@ -117,37 +145,70 @@ class QuestionGenerator:
         """Create default templates if they don't exist"""
         template_dir.mkdir(parents=True, exist_ok=True)
         
-        default_templates = {
-            "coding_templates.json": [
-                {
-                    "id": "code_1",
-                    "type": "algorithm",
-                    "difficulty_range": ["easy", "medium"],
-                    "structure": "Given {scenario}, implement {task}"
-                }
-            ],
-            "system_design_templates.json": [
-                {
-                    "id": "design_1",
-                    "type": "architecture",
-                    "difficulty_range": ["medium", "hard"],
-                    "structure": "Design a system that {requirement}"
-                }
-            ],
-            "behavioral_templates.json": [
-                {
-                    "id": "behavioral_1",
-                    "type": "situation",
-                    "difficulty_range": ["medium"],
-                    "structure": "Tell me about a time when {situation}"
-                }
-            ]
-        }
+        # Coding templates
+        coding_file = template_dir / "coding_templates.json"
+        if not coding_file.exists():
+            with open(coding_file, 'w') as f:
+                json.dump({"templates": self._create_default_coding_templates()}, f, indent=2)
         
-        for filename, content in default_templates.items():
-            template_path = template_dir / filename
-            with open(template_path, 'w') as f:
-                json.dump(content, f, indent=2)
+        # System design templates
+        design_file = template_dir / "system_design_templates.json"
+        if not design_file.exists():
+            with open(design_file, 'w') as f:
+                json.dump({"templates": self._create_default_system_design_templates()}, f, indent=2)
+                
+        # Behavioral templates
+        behavioral_file = template_dir / "behavioral_templates.json"
+        if not behavioral_file.exists():
+            with open(behavioral_file, 'w') as f:
+                json.dump({"templates": self._create_default_behavioral_templates()}, f, indent=2)
+
+    def _create_default_coding_templates(self) -> List[Dict[str, Any]]:
+        """Create default coding question templates"""
+        return [
+            {
+                "id": "code_algo",
+                "type": "algorithm",
+                "text": "What is the most efficient data structure for {task}?",
+                "options_template": ["Array", "Hash Table", "Tree", "Graph"]
+            },
+            {
+                "id": "code_debug",
+                "type": "debugging",
+                "text": "What's wrong with this code snippet?\n```python\n{code}\n```",
+                "options_template": ["Option A", "Option B", "Option C", "Option D"]
+            }
+        ]
+        
+    def _create_default_system_design_templates(self) -> List[Dict[str, Any]]:
+        """Create default system design question templates"""
+        return [
+            {
+                "id": "design_arch",
+                "type": "architecture",
+                "text": "Design a system that can {requirement}."
+            },
+            {
+                "id": "design_scale",
+                "type": "scalability",
+                "text": "How would you scale {system} to handle {load}?"
+            }
+        ]
+        
+    def _create_default_behavioral_templates(self) -> List[Dict[str, Any]]:
+        """Create default behavioral question templates"""
+        return [
+            {
+                "id": "behavioral_situation",
+                "type": "situation",
+                "text": "Tell me about a time when you {situation}."
+            },
+            {
+                "id": "behavioral_teamwork",
+                "type": "collaboration",
+                "text": "Describe a situation where you had to {challenge} with a team."
+            }
+        ]
 
     def generate_assessment(
         self, 
@@ -160,7 +221,6 @@ class QuestionGenerator:
         job_desc: Dict[str, Any]
     ) -> Assessment:
         """Generate a complete assessment package"""
-        
         # Generate questions for each category
         coding_questions = self.generate_coding_questions(skills, level)
         system_design_questions = self.generate_system_design_questions(experience, level)
@@ -191,18 +251,52 @@ class QuestionGenerator:
     ) -> List[CodingQuestion]:
         """Generate coding questions based on candidate skills"""
         questions = []
-        templates = self.templates.get("coding_templates", [])
+        
+        # Ensure we have templates to work with
+        coding_templates = self.templates.get("coding_templates", [])
+        if not coding_templates:
+            coding_templates = self._create_default_coding_templates()
         
         for i in range(count):
-            template = templates[i % len(templates)]
-            result = (self.coding_prompt | self.llm).invoke(
-                skills=", ".join(skills),
-                level=level,
-                template=json.dumps(template)
-            )
-            
-            question_data = json.loads(result.content)
-            questions.append(CodingQuestion(**question_data))
+            try:
+                # Get a template, cycling through available ones
+                template_index = i % len(coding_templates)
+                template = coding_templates[template_index]
+                
+                # Generate question
+                prompt_result = self.llm.invoke(self.coding_prompt.format(
+                    skills=", ".join(skills) if skills else "Programming",
+                    level=level,
+                    template=json.dumps(template)
+                ))
+                
+                # Extract JSON
+                question_text = prompt_result.content
+                
+                # Clean JSON from markdown blocks if present
+                if "```json" in question_text:
+                    question_text = question_text.split("```json", 1)[1].split("```", 1)[0]
+                elif "```" in question_text:
+                    question_text = question_text.split("```", 1)[0]
+                
+                question_data = json.loads(question_text.strip())
+                
+                # Create question object
+                questions.append(CodingQuestion(**question_data))
+                
+            except Exception as e:
+                print(f"Error generating coding question {i+1}: {e}")
+                # Create a default question
+                questions.append(CodingQuestion(
+                    id=f"coding_{i+1}",
+                    type="coding",
+                    text=f"What data structure would you use to implement a cache?",
+                    options=["Array", "Hash Table", "Linked List", "Binary Tree"],
+                    correct_option=1,
+                    explanation="Hash Tables provide O(1) average time complexity for lookups, which is ideal for caches.",
+                    difficulty="medium",
+                    score=10
+                ))
             
         return questions
 
@@ -214,18 +308,52 @@ class QuestionGenerator:
     ) -> List[SystemDesignQuestion]:
         """Generate system design questions based on experience"""
         questions = []
-        templates = self.templates.get("system_design_templates", [])
+        
+        # Ensure we have templates to work with
+        design_templates = self.templates.get("system_design_templates", [])
+        if not design_templates:
+            design_templates = self._create_default_system_design_templates()
         
         for i in range(count):
-            template = templates[i % len(templates)]
-            result = (self.system_design_prompt | self.llm).invoke(
-                experience=json.dumps(experience),
-                level=level,
-                template=json.dumps(template)
-            )
-            
-            question_data = json.loads(result.content)
-            questions.append(SystemDesignQuestion(**question_data))
+            try:
+                # Get a template, cycling through available ones
+                template_index = i % len(design_templates)
+                template = design_templates[template_index]
+                
+                # Generate question
+                prompt_result = self.llm.invoke(self.system_design_prompt.format(
+                    experience=json.dumps(experience) if experience else "[]",
+                    level=level,
+                    template=json.dumps(template)
+                ))
+                
+                # Extract JSON
+                question_text = prompt_result.content
+                
+                # Clean JSON from markdown blocks if present
+                if "```json" in question_text:
+                    question_text = question_text.split("```json", 1)[1].split("```", 1)[0]
+                elif "```" in question_text:
+                    question_text = question_text.split("```", 1)[0]
+                
+                question_data = json.loads(question_text.strip())
+                
+                # Create question object
+                questions.append(SystemDesignQuestion(**question_data))
+                
+            except Exception as e:
+                print(f"Error generating system design question {i+1}: {e}")
+                # Create a default question
+                questions.append(SystemDesignQuestion(
+                    id=f"design_{i+1}",
+                    type="system_design",
+                    text="Design a scalable web service that can handle high traffic loads",
+                    scenario="You are tasked with designing a web service that needs to handle millions of requests per day with high availability and low latency.",
+                    expected_components=["Load Balancer", "Web Servers", "Database", "Caching Layer"],
+                    evaluation_criteria=["Scalability", "Availability", "Performance", "Cost"],
+                    difficulty="medium",
+                    score=15
+                ))
             
         return questions
 
@@ -237,17 +365,51 @@ class QuestionGenerator:
     ) -> List[BehavioralQuestion]:
         """Generate behavioral questions based on resume and JD"""
         questions = []
-        templates = self.templates.get("behavioral_templates", [])
+        
+        # Ensure we have templates to work with
+        behavioral_templates = self.templates.get("behavioral_templates", [])
+        if not behavioral_templates:
+            behavioral_templates = self._create_default_behavioral_templates()
         
         for i in range(count):
-            template = templates[i % len(templates)]
-            result = (self.behavioral_prompt | self.llm).invoke(
-                resume_data=json.dumps(resume_data),
-                job_desc=json.dumps(job_desc),
-                template=json.dumps(template)
-            )
-            
-            question_data = json.loads(result.content)
-            questions.append(BehavioralQuestion(**question_data))
+            try:
+                # Get a template, cycling through available ones
+                template_index = i % len(behavioral_templates)
+                template = behavioral_templates[template_index]
+                
+                # Generate question
+                prompt_result = self.llm.invoke(self.behavioral_prompt.format(
+                    resume_data=json.dumps(resume_data),
+                    job_desc=json.dumps(job_desc),
+                    template=json.dumps(template)
+                ))
+                
+                # Extract JSON
+                question_text = prompt_result.content
+                
+                # Clean JSON from markdown blocks if present
+                if "```json" in question_text:
+                    question_text = question_text.split("```json", 1)[1].split("```", 1)[0]
+                elif "```" in question_text:
+                    question_text = question_text.split("```", 1)[0]
+                
+                question_data = json.loads(question_text.strip())
+                
+                # Create question object
+                questions.append(BehavioralQuestion(**question_data))
+                
+            except Exception as e:
+                print(f"Error generating behavioral question {i+1}: {e}")
+                # Create a default question
+                questions.append(BehavioralQuestion(
+                    id=f"behavioral_{i+1}",
+                    type="behavioral",
+                    text="Tell me about a time when you faced a difficult technical challenge and how you overcame it.",
+                    context="This question helps assess problem-solving abilities and resilience.",
+                    evaluation_points=["Problem analysis", "Solution approach", "Outcome"],
+                    passion_indicators=["Enthusiasm in description", "Learning from experience"],
+                    difficulty="medium",
+                    score=10
+                ))
             
         return questions
