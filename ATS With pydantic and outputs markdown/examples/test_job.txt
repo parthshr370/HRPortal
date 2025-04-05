@@ -1,0 +1,34 @@
+Machine Learning Research Engineer
+
+Job Description:
+We are seeking a talented Machine Learning Research Engineer with a strong background in deep learning and signal processing. The ideal candidate will work on cutting-edge research projects involving neural networks and process modeling.
+
+Required Skills:
+- Strong programming skills in Python
+- Experience with deep learning frameworks (PyTorch, TensorFlow)
+- Knowledge of signal processing and data analysis
+- Familiarity with research methodologies
+- Experience with version control (Git)
+
+Preferred Skills:
+- Experience with EEG data analysis
+- Knowledge of process mining
+- Familiarity with Docker
+- Experience with scientific writing and documentation
+- Background in statistical analysis
+
+Education:
+- Bachelor's or Master's degree in Computer Science, Data Science, or related field
+- Currently enrolled students with relevant research experience will be considered
+
+Responsibilities:
+- Develop and implement machine learning models
+- Conduct research experiments and document findings
+- Collaborate with cross-functional teams
+- Present research findings and technical documentation
+- Optimize existing models for better performance
+
+Experience:
+- Research experience in machine learning/deep learning
+- Previous internships in related fields
+- Demonstrated project work with neural networks

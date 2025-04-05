@@ -1,0 +1,179 @@
+{
+  "personal_info": {
+    "name": "Parth Sharma",
+    "email": "parthshr370@gmail.com",
+    "phone": "9971361784",
+    "location": "Jaipur"
+  },
+  "summary": "",
+  "education": [
+    {
+      "institution": "Manipal University Jaipur",
+      "degree": "Bachelor of Technology in Data Science",
+      "field": "Data Science",
+      "graduation_date": "2022 - Present",
+      "gpa": ""
+    },
+    {
+      "institution": "Blue Bells Public School Gurugram",
+      "degree": "CBSE",
+      "field": "",
+      "graduation_date": "2007-04 - 2022-05",
+      "gpa": ""
+    }
+  ],
+  "experience": [
+    {
+      "company": "Indian Institue of Information Technology Allahabad",
+      "title": "Research Intern",
+      "location": "Allahabad, India",
+      "start_date": "2024",
+      "end_date": "05",
+      "responsibilities": [
+        "Developed a fusion model to improve Process Prediction using LSTM and CNN",
+        "The fusion model significantly increased the accuracy along with less training time",
+        "Worked on Fine tunining LLMs for process modelling using POWL amd PM4PY",
+        "Improved the PromoAI Framework of process modelling for large scale databases and detect anamolies in them",
+        "Tech Stack"
+      ],
+      "achievements": []
+    }
+  ],
+  "skills": {
+    "technical": [
+      "Python",
+      "Java",
+      "SQL",
+      "HTML",
+      "CSS",
+      "C",
+      "PyTorch",
+      "TensorFlow",
+      "PM4PY",
+      "Librosa",
+      "Pandas",
+      "NumPy",
+      "Matplotlib",
+      "PyTorch Lightning",
+      "Keras",
+      "Flask",
+      "Streamlit",
+      "EEGLAB",
+      "Git",
+      "Docker",
+      "Linux",
+      "LaTeX",
+      "Matlab",
+      "PRoM (Process Mining)",
+      "GitHub",
+      "Signal Processing",
+      "Spectral Analysis",
+      "EEG Data Analysis",
+      "Statistical Analysis",
+      "Machine Learning",
+      "Data Visualization"
+    ],
+    "soft": [
+      "Research Methodology",
+      "Technical Writing",
+      "Project Documentation",
+      "Blogging",
+      "Stochastic Modelling",
+      "Linear Algebra",
+      "Calculus",
+      "Advanced Statistics",
+      "Optimization"
+    ]
+  },
+  "certifications": [],
+  "projects": [
+    {
+      "name": "HR Portal Agent | Capstone Project",
+      "description": "Developed a distributed multi",
+      "technologies": [],
+      "url": ""
+    },
+    {
+      "name": "agent HR system where each agentbuilt as a self-contained LangChain chainhandles specialized tasks such as OCR-based resume extraction, semantic candidate matching, and dynamic interview question generation.",
+      "description": "Created a multi",
+      "technologies": [],
+      "url": ""
+    },
+    {
+      "name": "agent workflow that outputted custom interview questions generated directly from the candidates resume, enhancing the personalization and relevance of interview sessions.",
+      "description": "Employed LangGraph to orchestrate agent workflows, enabling real",
+      "technologies": [],
+      "url": ""
+    },
+    {
+      "name": "time visualization, dynamic routing, and on-the-fly adjustments between independent modules.",
+      "description": "Designed the candidate matching agent to combine semantic embeddings, rule",
+      "technologies": [],
+      "url": ""
+    },
+    {
+      "name": "based keyword extraction, and configurable weighted scoring, ensuring high-accuracy candidate ranking.",
+      "description": "Integrated asynchronous communication via RESTful APIs (using FlaskFastAPI) to decouple agents, improve fault tolerance, and optimize processing efficiency.",
+      "technologies": [
+        "LangChain",
+        "LangGraph",
+        "MongoDB",
+        "FlaskFastAPI",
+        "Docker"
+      ],
+      "url": ""
+    },
+    {
+      "name": "Email AI Agent | Capstone Project",
+      "description": "Developed a multi",
+      "technologies": [],
+      "url": ""
+    },
+    {
+      "name": "agent orchestration system with LangChain, LangGraph, and LangSmith for managing email workflows, capable of automating the classification and response processes for incoming emails.",
+      "description": "Integrated SMTP server to facilitate real",
+      "technologies": [],
+      "url": ""
+    },
+    {
+      "name": "time email sending, and employed advanced technologies for robust email processing and automatic response drafting based on content classification.",
+      "description": "Designed a comprehensive system architecture that includes specialized agent modules for email filtering, summarization, and response generation, enhancing the efficiency of email management.",
+      "technologies": [
+        "LangChain",
+        "LangGraph",
+        "LangSmith",
+        "DeepSeek API"
+      ],
+      "url": ""
+    },
+    {
+      "name": "In-Run Data Shapley | Research Project",
+      "description": "Developed a method to compute a Shapley",
+      "technologies": [],
+      "url": ""
+    },
+    {
+      "name": "like contribution score for each training sample with respect to a single validation sample during training on the MNIST dataset.",
+      "description": "Implemented combined training and validation gradient computation within a single forward pass to assess the influence of each training sample on validation loss.",
+      "technologies": [],
+      "url": ""
+    },
+    {
+      "name": "order approximations through per-sample gradient dot-products to measure the impact of training samples on validation examples loss.",
+      "description": "Conducted multiple backward passes to demonstrate a naive implementation and discussed potential optimizations using forwardbackward hooks for efficiency.",
+      "technologies": [
+        "PyTorch",
+        "Librosa",
+        "NumPy",
+        "Matplotlib"
+      ],
+      "url": "Data"
+    },
+    {
+      "name": "Shapley-in-One-Training-",
+      "description": "",
+      "technologies": [],
+      "url": ""
+    }
+  ]
+}

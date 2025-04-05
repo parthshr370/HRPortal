@@ -1,0 +1,102 @@
+{
+  "templates": [
+    {
+      "id": "behavioral_situation",
+      "type": "situation",
+      "template": {
+        "junior": {
+          "text": "Tell me about a time when you {situation}. What was your approach and what did you learn?",
+          "situations": [
+            "faced a challenging technical problem",
+            "had to learn a new technology quickly",
+            "worked under a tight deadline",
+            "received constructive feedback"
+          ],
+          "evaluation_points": [
+            "problem-solving approach",
+            "learning ability",
+            "time management",
+            "adaptability"
+          ]
+        },
+        "mid": {
+          "text": "Describe a situation where you {challenge}. How did you handle it and what was the outcome?",
+          "challenges": [
+            "led a technical project",
+            "resolved a team conflict",
+            "improved a inefficient process",
+            "mentored a junior developer"
+          ],
+          "evaluation_points": [
+            "leadership skills",
+            "conflict resolution",
+            "process improvement",
+            "mentorship ability"
+          ]
+        },
+        "senior": {
+          "text": "Share an experience where you {complex_situation}. What was your strategy and what impact did it have?",
+          "complex_situations": [
+            "led a major system architecture change",
+            "handled a critical production incident",
+            "influenced a key technical decision",
+            "managed competing stakeholder priorities"
+          ],
+          "evaluation_points": [
+            "strategic thinking",
+            "crisis management",
+            "decision making",
+            "stakeholder management"
+          ]
+        }
+      },
+      "passion_indicators": [
+        "detailed technical explanation",
+        "enthusiasm in description",
+        "focus on impact and outcomes",
+        "lessons learned reflection",
+        "connection to broader goals"
+      ]
+    },
+    {
+      "id": "behavioral_teamwork",
+      "type": "collaboration",
+      "template": {
+        "junior": {
+          "text": "Describe a time when you {team_situation}. How did you contribute to the team's success?",
+          "team_situations": [
+            "worked in a diverse team",
+            "helped a teammate with a problem",
+            "participated in code reviews",
+            "contributed to team documentation"
+          ]
+        },
+        "mid": {
+          "text": "Tell me about a time when you {team_challenge}. How did you handle the situation?",
+          "team_challenges": [
+            "disagreed with a team member's approach",
+            "had to coordinate multiple teams",
+            "dealt with a underperforming team member",
+            "managed conflicting priorities"
+          ]
+        },
+        "senior": {
+          "text": "Share an experience where you {leadership_situation}. What was your approach and what were the results?",
+          "leadership_situations": [
+            "improved team processes",
+            "introduced new technology or practices",
+            "managed a cross-functional initiative",
+            "developed team members' skills"
+          ]
+        }
+      },
+      "evaluation_criteria": [
+        "teamwork ability",
+        "communication skills",
+        "leadership potential",
+        "conflict resolution",
+        "initiative"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,108 @@
+{
+  "templates": [
+    {
+      "id": "code_algo",
+      "type": "algorithm",
+      "template": {
+        "junior": {
+          "text": "Which data structure would be most efficient for implementing {use_case} that requires {operation}?",
+          "options_template": ["Array", "LinkedList", "HashTable", "Stack"],
+          "use_cases": [
+            "a queue system",
+            "a caching mechanism",
+            "a search feature",
+            "a real-time counter"
+          ],
+          "operations": [
+            "constant-time lookups",
+            "frequent insertions and deletions",
+            "maintaining order",
+            "tracking frequency"
+          ]
+        },
+        "mid": {
+          "text": "Given a system that needs to {system_requirement}, which algorithm would be most suitable for {specific_task}?",
+          "options_template": ["Dynamic Programming", "Greedy Algorithm", "Divide and Conquer", "Backtracking"],
+          "system_requirements": [
+            "process large datasets efficiently",
+            "optimize resource allocation",
+            "handle real-time requests",
+            "manage concurrent operations"
+          ],
+          "specific_tasks": [
+            "finding the optimal solution",
+            "minimizing response time",
+            "balancing load across servers",
+            "scheduling tasks"
+          ]
+        },
+        "senior": {
+          "text": "For a distributed system that handles {scale} requests per second, which approach would best address {challenge} while maintaining {requirement}?",
+          "options_template": ["Sharding", "Event Sourcing", "CQRS", "Saga Pattern"],
+          "scales": [
+            "millions of",
+            "hundreds of thousands of",
+            "concurrent",
+            "batch"
+          ],
+          "challenges": [
+            "data consistency",
+            "system latency",
+            "resource utilization",
+            "fault tolerance"
+          ],
+          "requirements": [
+            "high availability",
+            "data integrity",
+            "scalability",
+            "performance"
+          ]
+        }
+      },
+      "passion_indicators": [
+        "explains trade-offs",
+        "mentions real-world examples",
+        "discusses performance implications",
+        "considers edge cases"
+      ]
+    },
+    {
+      "id": "code_debug",
+      "type": "debugging",
+      "template": {
+        "junior": {
+          "text": "What is the bug in this code snippet?\n\n{code}\n\nWhat's the correct fix?",
+          "code_templates": [
+            "def calculate_average(numbers):\n    total = 0\n    for num in numbers:\n        total += num\n    return total/len(numbers)",
+            "def is_palindrome(s):\n    return s == s[::-1]",
+            "def find_max(arr):\n    if not arr:\n        return None\n    max_val = arr[0]\n    for num in arr[1:]:\n        if num > max_val:\n            max_val = num\n    return max_val"
+          ]
+        },
+        "mid": {
+          "text": "This code is causing {performance_issue}. Identify the problem and suggest an optimization:\n\n{code}",
+          "performance_issues": [
+            "memory leaks",
+            "excessive CPU usage",
+            "high latency",
+            "deadlocks"
+          ]
+        },
+        "senior": {
+          "text": "This system is experiencing {system_issue} under {condition}. Review the code and propose a solution:\n\n{code}",
+          "system_issues": [
+            "race conditions",
+            "cascading failures",
+            "resource exhaustion",
+            "data inconsistency"
+          ],
+          "conditions": [
+            "high load",
+            "network partitioning",
+            "concurrent access",
+            "system failures"
+          ]
+        }
+      }
+    }
+  ]
+}

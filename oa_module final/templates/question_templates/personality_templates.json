@@ -1,0 +1,74 @@
+{
+  "templates": [
+    {
+      "id": "personality_work_style",
+      "type": "work_preferences",
+      "template": {
+        "text": "How do you approach {work_situation}? Provide specific examples from your experience.",
+        "work_situations": [
+          "learning new technologies",
+          "handling multiple deadlines",
+          "making technical decisions",
+          "giving and receiving feedback",
+          "maintaining work-life balance"
+        ],
+        "evaluation_points": [
+          "self-awareness",
+          "growth mindset",
+          "time management",
+          "decision making process",
+          "communication style"
+        ]
+      },
+      "passion_indicators": [
+        "shows enthusiasm",
+        "provides concrete examples",
+        "demonstrates reflection",
+        "mentions continuous learning",
+        "discusses personal growth"
+      ]
+    },
+    {
+      "id": "personality_motivation",
+      "type": "motivation",
+      "template": {
+        "text": "What aspects of {role_context} most excite you and why?",
+        "role_contexts": [
+          "working with cutting-edge technologies",
+          "solving complex technical challenges",
+          "collaborating in a team environment",
+          "building scalable systems",
+          "improving user experience"
+        ],
+        "evaluation_points": [
+          "alignment with role",
+          "technical interest",
+          "long-term vision",
+          "cultural fit",
+          "motivation factors"
+        ]
+      }
+    },
+    {
+      "id": "personality_challenge",
+      "type": "challenges",
+      "template": {
+        "text": "How do you handle {challenging_situation}? Share a specific experience.",
+        "challenging_situations": [
+          "technical disagreements",
+          "project setbacks",
+          "tight deadlines",
+          "ambiguous requirements",
+          "production incidents"
+        ],
+        "evaluation_points": [
+          "problem-solving approach",
+          "stress management",
+          "adaptability",
+          "resilience",
+          "learning from challenges"
+        ]
+      }
+    }
+  ]
+}

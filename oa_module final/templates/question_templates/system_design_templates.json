@@ -1,0 +1,137 @@
+{
+  "templates": [
+    {
+      "id": "design_arch",
+      "type": "architecture",
+      "template": {
+        "junior": {
+          "text": "Design a simple {system_type} that can handle {requirement}. Focus on the basic components and their interactions.",
+          "system_types": [
+            "user authentication system",
+            "file upload service",
+            "caching layer",
+            "notification service"
+          ],
+          "requirements": [
+            "1000 requests per minute",
+            "user data persistence",
+            "real-time updates",
+            "file storage and retrieval"
+          ],
+          "evaluation_criteria": [
+            "basic component identification",
+            "data flow understanding",
+            "error handling",
+            "basic security considerations"
+          ]
+        },
+        "mid": {
+          "text": "Design a scalable {service_type} that supports {primary_feature} and handles {scale}. Consider performance, reliability, and maintenance.",
+          "service_types": [
+            "social media feed",
+            "e-commerce platform",
+            "content delivery network",
+            "payment processing system"
+          ],
+          "primary_features": [
+            "real-time updates",
+            "transaction processing",
+            "data analytics",
+            "user personalization"
+          ],
+          "scales": [
+            "millions of daily active users",
+            "terabytes of data",
+            "global traffic",
+            "peak load conditions"
+          ]
+        },
+        "senior": {
+          "text": "Design a distributed {system_type} that ensures {requirement} while handling {challenge}. Focus on scalability, reliability, and fault tolerance.",
+          "system_types": [
+            "distributed database",
+            "message queue system",
+            "recommendation engine",
+            "real-time analytics platform"
+          ],
+          "requirements": [
+            "eventual consistency",
+            "high availability",
+            "data partitioning",
+            "disaster recovery"
+          ],
+          "challenges": [
+            "network partitions",
+            "data replication",
+            "concurrent updates",
+            "system failures"
+          ]
+        }
+      },
+      "evaluation_points": [
+        "component design",
+        "scalability considerations",
+        "performance optimization",
+        "security measures",
+        "monitoring and maintenance"
+      ]
+    },
+    {
+      "id": "design_scale",
+      "type": "scalability",
+      "template": {
+        "junior": {
+          "text": "How would you scale {component} to handle {load}? Consider basic optimization techniques.",
+          "components": [
+            "a web server",
+            "a database",
+            "a caching system",
+            "an API endpoint"
+          ],
+          "loads": [
+            "increasing user traffic",
+            "growing data size",
+            "more concurrent requests",
+            "higher request frequency"
+          ]
+        },
+        "mid": {
+          "text": "Design a scaling strategy for {system} that needs to handle {requirement} while maintaining {constraint}.",
+          "systems": [
+            "a microservices architecture",
+            "a data processing pipeline",
+            "a search service",
+            "a real-time analytics system"
+          ],
+          "requirements": [
+            "global distribution",
+            "high availability",
+            "low latency",
+            "data consistency"
+          ]
+        },
+        "senior": {
+          "text": "Propose an architecture for {complex_system} that can scale to {scale} while ensuring {quality_attribute}.",
+          "complex_systems": [
+            "a distributed database",
+            "a real-time streaming platform",
+            "a multi-tenant SaaS application",
+            "a global content delivery network"
+          ],
+          "scales": [
+            "petabyte-scale data",
+            "millions of transactions per second",
+            "global user base",
+            "multi-region deployment"
+          ],
+          "quality_attributes": [
+            "strong consistency",
+            "sub-second latency",
+            "99.999% availability",
+            "disaster recovery"
+          ]
+        }
+      }
+    }
+  ]
+}
